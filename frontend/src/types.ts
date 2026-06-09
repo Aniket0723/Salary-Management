@@ -1,13 +1,17 @@
 export interface Employee {
   id: number;
+  employee_code: string;
   full_name: string;
+  email: string;
   job_title: string;
   country: string;
   salary: number;
   department: string;
   employment_type: string;
   currency: string;
+  hire_date: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface PaginatedResponse<T> {

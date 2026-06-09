@@ -10,14 +10,18 @@ vi.mock('../db/client.js', () => ({
 
 const employee = {
   id: 1,
+  employee_code: 'ACME-00001',
   full_name: 'Jane Doe',
+  email: 'jane.doe@acme.example',
   job_title: 'Software Engineer',
   country: 'India',
   salary: 100000,
   department: 'Engineering',
   employment_type: 'Full-time',
   currency: 'USD',
+  hire_date: '2024-01-15',
   created_at: '2026-01-01T00:00:00.000Z',
+  updated_at: '2026-01-01T00:00:00.000Z',
 };
 
 describe('employees API handler', () => {
@@ -51,9 +55,9 @@ describe('employees API handler', () => {
     expect(query).toHaveBeenCalledTimes(2);
     expect(query.mock.calls[1][0]).toContain('ORDER BY salary DESC');
     expect(query.mock.calls[1][1]).toEqual([
-      '%Jane%',
-      'India',
-      'Software Engineer',
+        '%Jane%',
+        'India',
+        'Software Engineer',
       25,
       25,
     ]);
@@ -87,13 +91,16 @@ describe('employees API handler', () => {
     const req = createReq({
       method: 'POST',
       body: {
+        employee_code: 'ACME-00001',
         full_name: 'Jane Doe',
+        email: 'jane.doe@acme.example',
         job_title: 'Software Engineer',
         country: 'India',
         salary: '100000',
         department: 'Engineering',
         employment_type: 'Full-time',
         currency: 'USD',
+        hire_date: '2024-01-15',
       },
     });
     const res = createRes();
@@ -101,13 +108,16 @@ describe('employees API handler', () => {
     await handler(req, res);
 
     expect(query).toHaveBeenCalledWith(expect.stringContaining('INSERT INTO employees'), [
+      'ACME-00001',
       'Jane Doe',
+      'jane.doe@acme.example',
       'Software Engineer',
       'India',
       100000,
       'Engineering',
       'Full-time',
       'USD',
+      '2024-01-15',
     ]);
     expect(res.statusCode).toBe(201);
     expect(res.body).toEqual(employee);

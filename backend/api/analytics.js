@@ -79,7 +79,7 @@ export default async function handler(req, res) {
       ),
       query(
         `
-          SELECT id, full_name, job_title, country, salary, department, employment_type, currency, created_at
+          SELECT id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date, created_at, updated_at
           FROM employees
           ${whereSql}
           ORDER BY salary DESC

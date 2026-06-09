@@ -14,7 +14,21 @@ describe('API Client', () => {
   describe('fetchEmployees', () => {
     it('returns paginated employee data', async () => {
       const mockResponse = {
-        data: [{ id: 1, full_name: 'John Doe', job_title: 'Engineer', country: 'USA', salary: 100000, department: 'Engineering', employment_type: 'Full-time', currency: 'USD', created_at: '2024-01-01' }],
+        data: [{
+          id: 1,
+          employee_code: 'ACME-00001',
+          full_name: 'John Doe',
+          email: 'john.doe@acme.example',
+          job_title: 'Engineer',
+          country: 'USA',
+          salary: 100000,
+          department: 'Engineering',
+          employment_type: 'Full-time',
+          currency: 'USD',
+          hire_date: '2020-01-01',
+          created_at: '2024-01-01',
+          updated_at: '2024-01-01',
+        }],
         count: 1,
         page: 1,
         limit: 50,
@@ -39,10 +53,21 @@ describe('API Client', () => {
 
   describe('createEmployee', () => {
     it('creates an employee and returns it', async () => {
-      const newEmp = { full_name: 'Jane Doe', job_title: 'Designer', country: 'UK', salary: 80000, department: 'Product', employment_type: 'Full-time', currency: 'USD' };
+      const newEmp = {
+        employee_code: 'ACME-00002',
+        full_name: 'Jane Doe',
+        email: 'jane.doe@acme.example',
+        job_title: 'Designer',
+        country: 'UK',
+        salary: 80000,
+        department: 'Product',
+        employment_type: 'Full-time',
+        currency: 'USD',
+        hire_date: '2021-01-01',
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ id: 2, ...newEmp, created_at: '2024-01-01' }),
+        json: async () => ({ id: 2, ...newEmp, created_at: '2024-01-01', updated_at: '2024-01-01' }),
       });
 
       const result = await createEmployee(newEmp);

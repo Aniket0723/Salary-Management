@@ -22,7 +22,21 @@ const mockAnalytics: AnalyticsData = {
     { department: 'Engineering', count: 400, avg_salary: 65000, total_payroll: 26000000 },
   ],
   top_earners: [
-    { id: 1, full_name: 'Alice Smith', job_title: 'CEO', country: 'USA', salary: 200000, department: 'Executive', employment_type: 'Full-time', currency: 'USD', created_at: '2024-01-01' },
+    {
+      id: 1,
+      employee_code: 'ACME-00001',
+      full_name: 'Alice Smith',
+      email: 'alice.smith@acme.example',
+      job_title: 'CEO',
+      country: 'USA',
+      salary: 200000,
+      department: 'Executive',
+      employment_type: 'Full-time',
+      currency: 'USD',
+      hire_date: '2020-01-01',
+      created_at: '2024-01-01',
+      updated_at: '2024-01-01',
+    },
   ],
 };
 

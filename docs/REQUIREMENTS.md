@@ -6,7 +6,7 @@ Build a minimal yet usable web-based employee salary management tool for ACME or
 ## Scope & Features (In Scope)
 
 ### 1. Employee Management
-- **Add** new employees with: full name, job title, country, salary, department, employment type, currency
+- **Add** new employees with: employee code, full name, email, job title, country, salary, department, employment type, currency, hire date
 - **View** all employees in a searchable, filterable, paginated table
 - **Update** employee details inline or via edit form
 - **Delete** employees with confirmation

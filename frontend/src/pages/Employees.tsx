@@ -117,7 +117,7 @@ export default function Employees() {
               <input
                 value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search name, title, or department"
+                placeholder="Search code, name, email, title, or department"
                 className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-[11px] font-medium text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
               />
             </div>
@@ -212,6 +212,7 @@ export default function Employees() {
                     <td className="px-5 py-4 font-medium text-slate-400">#{emp.id}</td>
                     <td className="px-5 py-4">
                       <div className="font-semibold text-slate-950">{emp.full_name}</div>
+                      <div className="text-xs text-slate-400">{emp.employee_code}</div>
                     </td>
                     <td className="px-5 py-4 text-slate-700">{emp.job_title}</td>
                     <td className="px-5 py-4">

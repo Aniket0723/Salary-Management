@@ -20,7 +20,9 @@ export async function fetchEmployees(params: {
   return res.json();
 }
 
-export async function createEmployee(employee: Omit<Employee, 'id' | 'created_at'>): Promise<Employee> {
+export type EmployeePayload = Omit<Employee, 'id' | 'created_at' | 'updated_at'>;
+
+export async function createEmployee(employee: EmployeePayload): Promise<Employee> {
   const res = await fetch(`${API_BASE}/employees`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

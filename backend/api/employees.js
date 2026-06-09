@@ -2,15 +2,21 @@ import { ensureDatabase, query } from '../db/client.js';
 
 const SORT_COLUMNS = new Set([
   'id',
+  'employee_code',
   'full_name',
+  'email',
   'job_title',
   'country',
   'salary',
   'department',
   'employment_type',
   'currency',
+  'hire_date',
   'created_at',
+  'updated_at',
 ]);
+
+const EMPLOYEE_FIELDS = 'id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date, created_at, updated_at';
 
 function jsonError(res, status, message) {
   return res.status(status).json({ error: message });
@@ -22,7 +28,7 @@ function buildWhere({ search = '', country = '', job_title = '' }) {
 
   if (search) {
     values.push(`%${search}%`);
-    clauses.push(`(full_name ILIKE $${values.length} OR job_title ILIKE $${values.length} OR department ILIKE $${values.length})`);
+    clauses.push(`(employee_code ILIKE $${values.length} OR full_name ILIKE $${values.length} OR email ILIKE $${values.length} OR job_title ILIKE $${values.length} OR department ILIKE $${values.length})`);
   }
   if (country) {
     values.push(country);
@@ -69,7 +75,7 @@ export default async function handler(req, res) {
       const countResult = await query(`SELECT COUNT(*)::int AS count FROM employees ${whereSql}`, values);
       const dataResult = await query(
         `
-          SELECT id, full_name, job_title, country, salary, department, employment_type, currency, created_at
+          SELECT ${EMPLOYEE_FIELDS}
           FROM employees
           ${whereSql}
           ORDER BY ${sortColumn} ${sortDirection}
@@ -90,27 +96,27 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { full_name, job_title, country, salary, department, employment_type, currency = 'USD' } = req.body;
-      if (!full_name || !job_title || !country || salary == null) {
-        return jsonError(res, 400, 'Missing required fields: full_name, job_title, country, salary');
+      const { employee_code, full_name, email, job_title, country, salary, department, employment_type, currency = 'USD', hire_date } = req.body;
+      if (!employee_code || !full_name || !email || !job_title || !country || salary == null || !hire_date) {
+        return jsonError(res, 400, 'Missing required fields: employee_code, full_name, email, job_title, country, salary, hire_date');
       }
 
       const result = await query(
         `
-          INSERT INTO employees (full_name, job_title, country, salary, department, employment_type, currency)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
-          RETURNING id, full_name, job_title, country, salary, department, employment_type, currency, created_at
+          INSERT INTO employees (employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          RETURNING ${EMPLOYEE_FIELDS}
         `,
-        [full_name, job_title, country, Number(salary), department || null, employment_type || null, currency || 'USD'],
+        [employee_code, full_name, email, job_title, country, Number(salary), department || null, employment_type || null, currency || 'USD', hire_date],
       );
       return res.status(201).json(result.rows[0]);
     }
 
     if (req.method === 'PUT') {
-      const { id, full_name, job_title, country, salary, department, employment_type, currency } = req.body;
+      const { id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date } = req.body;
       if (!id) return jsonError(res, 400, 'Missing id');
 
-      const fields = { full_name, job_title, country, salary, department, employment_type, currency };
+      const fields = { employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date };
       const assignments = [];
       const values = [];
 
@@ -127,9 +133,9 @@ export default async function handler(req, res) {
       const result = await query(
         `
           UPDATE employees
-          SET ${assignments.join(', ')}
+          SET ${assignments.join(', ')}, updated_at = NOW()
           WHERE id = $${values.length}
-          RETURNING id, full_name, job_title, country, salary, department, employment_type, currency, created_at
+          RETURNING ${EMPLOYEE_FIELDS}
         `,
         values,
       );

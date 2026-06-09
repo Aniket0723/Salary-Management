@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, UserRound, X } from 'lucide-react';
 import type { Employee } from '../types';
-import { createEmployee, updateEmployee, fetchFilters } from '../lib/api';
+import { createEmployee, updateEmployee, fetchFilters, type EmployeePayload } from '../lib/api';
 
 interface Props {
   employee?: Employee | null;
@@ -9,17 +9,20 @@ interface Props {
   onSuccess: () => void;
 }
 
-type EmployeePayload = Omit<Employee, 'id' | 'created_at'>;
+const today = () => new Date().toISOString().slice(0, 10);
 
 export default function EmployeeForm({ employee, onClose, onSuccess }: Props) {
   const [form, setForm] = useState({
+    employee_code: '',
     full_name: '',
+    email: '',
     job_title: '',
     country: '',
     salary: '',
     department: '',
     employment_type: 'Full-time',
     currency: 'USD',
+    hire_date: today(),
   });
   const [filters, setFilters] = useState({ countries: [] as string[], job_titles: [] as string[], departments: [] as string[] });
   const [loading, setLoading] = useState(false);
@@ -29,13 +32,16 @@ export default function EmployeeForm({ employee, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (employee) {
       setForm({
+        employee_code: employee.employee_code,
         full_name: employee.full_name,
+        email: employee.email,
         job_title: employee.job_title,
         country: employee.country,
         salary: String(employee.salary),
         department: employee.department,
         employment_type: employee.employment_type,
         currency: employee.currency,
+        hire_date: employee.hire_date.slice(0, 10),
       });
     }
     fetchFilters().then(setFilters).catch(() => {});
@@ -84,15 +90,50 @@ export default function EmployeeForm({ employee, onClose, onSuccess }: Props) {
         </div>
         <form onSubmit={handleSubmit} className="max-h-[calc(90vh-88px)] space-y-5 overflow-y-auto p-5 md:p-6">
           {error && <div className="rounded-lg border border-red-100 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>}
-          <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Full Name *</label>
-            <input
-              required
-              value={form.full_name}
-              onChange={e => setForm({ ...form, full_name: e.target.value })}
-              className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
-              placeholder="e.g. John Smith"
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Employee Code *</label>
+              <input
+                required
+                value={form.employee_code}
+                onChange={e => setForm({ ...form, employee_code: e.target.value })}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                placeholder="e.g. ACME-01001"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Hire Date *</label>
+              <input
+                required
+                type="date"
+                value={form.hire_date}
+                onChange={e => setForm({ ...form, hire_date: e.target.value })}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Full Name *</label>
+              <input
+                required
+                value={form.full_name}
+                onChange={e => setForm({ ...form, full_name: e.target.value })}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                placeholder="e.g. John Smith"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Email *</label>
+              <input
+                required
+                type="email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
+                placeholder="e.g. john.smith@acme.example"
+              />
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
