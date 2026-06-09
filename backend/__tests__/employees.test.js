@@ -71,6 +71,19 @@ describe('employees API handler', () => {
     });
   });
 
+  it('returns one employee by route id', async () => {
+    query.mockResolvedValueOnce({ rows: [employee] });
+
+    const req = createReq({ method: 'GET', params: { id: '1' } });
+    const res = createRes();
+
+    await handler(req, res);
+
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('WHERE id = $1'), [1]);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual(employee);
+  });
+
   it('rejects create requests missing required fields', async () => {
     const req = createReq({
       method: 'POST',
@@ -150,7 +163,7 @@ describe('employees API handler', () => {
   it('returns 404 when deleting a missing employee', async () => {
     query.mockResolvedValueOnce({ rows: [] });
 
-    const req = createReq({ method: 'DELETE', body: { id: 999 } });
+    const req = createReq({ method: 'DELETE', params: { id: '999' } });
     const res = createRes();
 
     await handler(req, res);

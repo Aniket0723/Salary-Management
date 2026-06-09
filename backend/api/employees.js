@@ -77,6 +77,10 @@ function buildWhere({ search = '', country = '', job_title = '' }) {
   };
 }
 
+function getRouteId(req) {
+  return req.params?.id ?? req.body?.id;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -87,6 +91,16 @@ export default async function handler(req, res) {
     await ensureDatabase();
 
     if (req.method === 'GET') {
+      if (req.params?.id) {
+        const result = await query(
+          `SELECT ${EMPLOYEE_FIELDS} FROM employees WHERE id = $1`,
+          [Number(req.params.id)],
+        );
+
+        if (!result.rows[0]) return jsonError(res, 404, 'Employee not found');
+        return res.status(200).json(result.rows[0]);
+      }
+
       const {
         page = '1',
         limit = '50',
@@ -145,7 +159,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const parsed = employeeUpdateSchema.safeParse(req.body);
+      const parsed = employeeUpdateSchema.safeParse({ ...req.body, id: getRouteId(req) });
       if (!parsed.success) return jsonError(res, 400, formatValidationError(parsed));
 
       const { id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date } = parsed.data;
@@ -175,7 +189,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.body;
+      const id = getRouteId(req);
       if (!id) return jsonError(res, 400, 'Missing id');
 
       const result = await query('DELETE FROM employees WHERE id = $1 RETURNING id', [Number(id)]);

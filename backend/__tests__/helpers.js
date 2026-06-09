@@ -1,5 +1,5 @@
-export function createReq({ method = 'GET', query = {}, body = {} } = {}) {
-  return { method, query, body };
+export function createReq({ method = 'GET', query = {}, body = {}, params = {} } = {}) {
+  return { method, query, body, params };
 }
 
 export function createRes() {

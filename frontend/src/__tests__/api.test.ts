@@ -4,11 +4,36 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee, fetchAnalytics, fetchFilters } from '../lib/api';
+import { fetchEmployees, fetchEmployee, createEmployee, updateEmployee, deleteEmployee, fetchAnalytics, fetchFilters } from '../lib/api';
 
 describe('API Client', () => {
   beforeEach(() => {
     mockFetch.mockClear();
+  });
+
+  describe('fetchEmployee', () => {
+    it('returns one employee by id', async () => {
+      const mockEmployee = {
+        id: 1,
+        employee_code: 'ACME-00001',
+        full_name: 'John Doe',
+        email: 'john.doe@acme.example',
+        job_title: 'Engineer',
+        country: 'USA',
+        salary: 100000,
+        department: 'Engineering',
+        employment_type: 'Full-time',
+        currency: 'USD',
+        hire_date: '2020-01-01',
+        created_at: '2024-01-01',
+        updated_at: '2024-01-01',
+      };
+      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockEmployee });
+
+      const result = await fetchEmployee(1);
+      expect(result.id).toBe(1);
+      expect(mockFetch).toHaveBeenCalledWith('/api/employees/1');
+    });
   });
 
   describe('fetchEmployees', () => {
@@ -89,6 +114,10 @@ describe('API Client', () => {
 
       const result = await updateEmployee(update);
       expect(result.salary).toBe(110000);
+      expect(mockFetch).toHaveBeenCalledWith('/api/employees/1', expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({ salary: 110000 }),
+      }));
     });
   });
 
@@ -96,9 +125,8 @@ describe('API Client', () => {
     it('deletes an employee', async () => {
       mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
       await deleteEmployee(1);
-      expect(mockFetch).toHaveBeenCalledWith('/api/employees', expect.objectContaining({
+      expect(mockFetch).toHaveBeenCalledWith('/api/employees/1', expect.objectContaining({
         method: 'DELETE',
-        body: JSON.stringify({ id: 1 }),
       }));
     });
   });

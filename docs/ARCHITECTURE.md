@@ -76,9 +76,10 @@ The database client creates the `employees` table and indexes if they do not exi
 Implemented in `backend/api/`:
 
 - `GET /api/employees`
+- `GET /api/employees/:id`
 - `POST /api/employees`
-- `PUT /api/employees`
-- `DELETE /api/employees`
+- `PUT /api/employees/:id`
+- `DELETE /api/employees/:id`
 - `GET /api/analytics`
 - `GET /api/filters`
 - `POST /api/seed`

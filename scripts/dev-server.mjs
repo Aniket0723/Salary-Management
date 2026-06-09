@@ -16,6 +16,22 @@ const apiRoutes = {
   '/api/seed': () => import('../backend/api/seed.js'),
 };
 
+function matchApiRoute(pathname) {
+  if (apiRoutes[pathname]) {
+    return { loader: apiRoutes[pathname], params: {} };
+  }
+
+  const employeeMatch = pathname.match(/^\/api\/employees\/(\d+)$/);
+  if (employeeMatch) {
+    return {
+      loader: apiRoutes['/api/employees'],
+      params: { id: employeeMatch[1] },
+    };
+  }
+
+  return null;
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
@@ -52,14 +68,15 @@ function patchResponse(res) {
 }
 
 async function handleApi(req, res, url) {
-  const loader = apiRoutes[url.pathname];
-  if (!loader) return false;
+  const match = matchApiRoute(url.pathname);
+  if (!match) return false;
 
   try {
     const body = await readBody(req);
-    const mod = await loader();
+    const mod = await match.loader();
     req.query = Object.fromEntries(url.searchParams.entries());
     req.body = body;
+    req.params = match.params;
     await mod.default(req, patchResponse(res));
   } catch (err) {
     console.error('Local API error:', err);

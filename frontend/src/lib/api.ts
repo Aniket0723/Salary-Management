@@ -22,6 +22,12 @@ export async function fetchEmployees(params: {
 
 export type EmployeePayload = Omit<Employee, 'id' | 'created_at' | 'updated_at'>;
 
+export async function fetchEmployee(id: number): Promise<Employee> {
+  const res = await fetch(`${API_BASE}/employees/${id}`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function createEmployee(employee: EmployeePayload): Promise<Employee> {
   const res = await fetch(`${API_BASE}/employees`, {
     method: 'POST',
@@ -33,20 +39,19 @@ export async function createEmployee(employee: EmployeePayload): Promise<Employe
 }
 
 export async function updateEmployee(employee: Partial<Employee> & { id: number }): Promise<Employee> {
-  const res = await fetch(`${API_BASE}/employees`, {
+  const { id, ...payload } = employee;
+  const res = await fetch(`${API_BASE}/employees/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(employee),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function deleteEmployee(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/employees`, {
+  const res = await fetch(`${API_BASE}/employees/${id}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id }),
   });
   if (!res.ok) throw new Error(await res.text());
 }
