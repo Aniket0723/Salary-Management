@@ -1,62 +1,66 @@
-# Employee Salary Management Tool — Requirements Document
+# Employee Salary Management Tool - Requirements Document
 
 ## Goal
-Build a minimal yet usable web-based employee salary management tool for ACME org's HR Manager to manage salary data for ~10,000 employees across multiple countries, replacing the current Excel-based workflow.
 
-## Scope & Features (In Scope)
+Build a minimal yet usable web-based employee salary management tool for ACME org's HR Manager to manage salary data for roughly 10,000 employees across multiple countries, replacing the current spreadsheet workflow.
+
+## Scope And Features
 
 ### 1. Employee Management
-- **Add** new employees with: employee code, full name, email, job title, country, salary, department, employment type, currency, hire date
-- **View** all employees in a searchable, filterable, paginated table
-- **Update** employee details inline or via edit form
-- **Delete** employees with confirmation
-- **Search** by name, job title, or department
-- **Filter** by country and job title
-- **Pagination** for performance with large datasets
+
+- Add employees with employee code, full name, email, job title, country, salary, department, employment type, currency, and hire date.
+- View employees in a searchable, filterable, sortable, paginated table.
+- Update employee details through an edit form.
+- Delete employees with confirmation.
+- Search by employee code, full name, email, job title, or department.
+- Filter by country and job title.
+- Validate employee inputs before persistence, including required fields, valid email, positive salary, allowed employment type, and `YYYY-MM-DD` hire date.
 
 ### 2. Salary Insights Dashboard
-- Minimum, maximum, and average salary per country
-- Average salary per job title (globally and per country)
-- Total headcount and total payroll per country
-- Department-wise salary distribution
-- Top 10 highest-paid employees
-- Currency-aware display (all salaries stored in USD for consistency)
 
-### 3. Technical
-- Responsive UI (desktop-first, usable on mobile)
-- Fast search and filtering (server-side pagination)
-- Seeding script for 10,000 employees with realistic data from `backend/seed/data/first_names.txt` and `backend/seed/data/last_names.txt`
-- Unit tests for core functionality
+- Overall employee count, total payroll, average salary, and salary range.
+- Minimum, maximum, and average salary by country.
+- Average salary by job title and country.
+- Department-level headcount, average salary, and payroll.
+- Top 10 highest-paid employees.
+- Dashboard filters for country and job title.
 
-## Deliberately Left Out (With Reasoning)
+### 3. Technical Scope
+
+- React + TypeScript + Vite frontend.
+- Node.js API handlers under `backend/api`.
+- Neon PostgreSQL database through the `pg` client.
+- REST-style employee routes for detail/update/delete operations.
+- Server-side pagination, search, filtering, sorting, and analytics.
+- Seed script for 10,000 generated employees using `first_names.txt` and `last_names.txt`.
+- Route-level frontend code splitting for Dashboard and Employees pages.
+- Unit and API-focused tests for core behavior.
+
+## Deliberately Left Out
 
 | Feature | Reasoning |
 |---------|-----------|
-| **Authentication/Authorization** | The prompt specifies a single HR Manager persona. Adding auth adds complexity without value for this assessment. In production, we'd add SSO/OAuth. |
-| **Multi-currency conversion** | All salaries stored in USD for consistency. Real-time exchange rates would require an external API and add unnecessary complexity. |
-| **Salary history/audit trail** | Would require a separate `salary_changes` table. Useful but not core to the "manage current salaries" use case. |
-| **Bulk import/export (CSV/Excel)** | The prompt focuses on replacing Excel, not integrating with it. Bulk import would be a v2 feature. |
-| **Advanced role-based access** | Single user persona means no need for roles like "viewer" vs "editor". |
-| **Real-time notifications** | Not relevant for a salary management tool used by one person. |
-| **Payroll processing/payments** | Out of scope — this is a data management tool, not a payroll system. |
-| **Employee self-service portal** | Only HR Manager is the user; employees don't need access. |
-| **Performance reviews integration** | Salary management is distinct from performance management. |
-| **Advanced analytics (predictive)** | Basic aggregations suffice; ML/predictions are overkill for v1. |
-
-## Architecture
-- **Frontend**: React + TypeScript + Tailwind CSS + Vite
-- **Backend**: Node.js API handlers under `backend/api`
-- **Database**: Neon PostgreSQL (relational, excellent for aggregations)
-- **Deployment**: Environment-driven Node/Vite deployment
+| Authentication/Authorization | The prompt specifies a single HR Manager persona. In production, SSO/OAuth would be required. |
+| Multi-currency conversion | Salaries are stored and displayed in USD for consistency. Exchange-rate logic would add external dependency and scope. |
+| Salary history/audit trail | Useful for production, but it would require a separate salary-change model and is not core to the current-salary workflow. |
+| Bulk CSV/Excel import/export | Helpful for migration, but the v1 focuses on CRUD, filtering, and insights. |
+| Role-based permissions | A single user persona does not require viewer/editor/admin roles for this assessment. |
+| Payroll processing/payments | This is a salary data management tool, not a payment or payroll execution system. |
+| Employee self-service portal | The only user persona is the HR Manager. |
+| Predictive compensation analytics | Basic salary aggregates are enough for the prompt and easier to reason about. |
 
 ## Performance Considerations
-- Server-side pagination (50 records per page) to keep UI responsive
-- Database indexes on `country`, `job_title`, `salary` for fast filtering
-- Aggregations computed at database level, not in memory
-- Seeding script uses batch inserts for speed
+
+- Employee table uses server-side pagination with a default page size of 50.
+- Search, filtering, sorting, and aggregations run in the database.
+- Indexes support common access paths: `country`, `job_title`, `(country, job_title)`, `salary`, `full_name`, `employee_code`, and `email`.
+- Seed script uses batch inserts of 500 rows.
+- Dashboard refresh keeps existing analytics visible to avoid layout flicker.
+- Dashboard and Employees pages are lazy-loaded as separate frontend chunks.
 
 ## Seed Data Strategy
-- 10,000 employees generated from `first_names.txt` + `last_names.txt` combinations
-- 15 realistic job titles, 10 countries, 5 departments
-- Salaries follow realistic distributions per country/role
-- Batch insert of 500 rows at a time for performance
+
+- Generates 10,000 employees by combining first and last name files.
+- Adds realistic HR fields: employee code, email, department, employment type, country, currency, hire date, job title, and salary.
+- Salaries are role- and country-aware enough to make analytics meaningful.
+- Supports both reset mode and append mode.

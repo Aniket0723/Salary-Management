@@ -11,12 +11,12 @@ Frontend:
 - Tailwind CSS 4
 - React Router
 - Lucide React icons
-- Framer Motion
 
 Backend:
 - Node.js API handlers
 - Native Node HTTP server for local full-stack development
 - `pg` PostgreSQL client
+- `zod` payload validation
 - Neon PostgreSQL
 
 Testing and quality:
@@ -25,6 +25,16 @@ Testing and quality:
 - ESLint
 - TypeScript build checks
 - npm audit
+
+## Features
+
+- Dashboard with employee count, total payroll, average salary, salary range, country analytics, job analytics, department analytics, and top earners.
+- Employee table with search, country filter, job title filter, sorting, pagination, create, edit, and delete.
+- Employee data model with employee code, full name, email, job title, country, salary, department, employment type, currency, hire date, created timestamp, and updated timestamp.
+- REST-style employee detail/update/delete routes.
+- Server-side pagination, filtering, sorting, and SQL-backed analytics.
+- Route-level frontend code splitting with preloading on navigation hover/focus.
+- Seed script for 10,000 employees using batch inserts.
 
 ## Folder Structure
 
@@ -86,7 +96,43 @@ Append generated employees without clearing existing rows:
 npm run seed:append -- 1000
 ```
 
-The seed command creates the `employees` table and indexes if they do not exist. `npm run seed` clears existing rows and resets IDs; `npm run seed:append` only inserts additional rows.
+The seed command creates or upgrades the `employees` table and indexes if they do not exist. `npm run seed` clears existing rows and resets IDs; `npm run seed:append` only inserts additional rows.
+
+Generated seed employees include employee code, full name, email, job title, country, salary, department, employment type, currency, and hire date.
+
+## API Summary
+
+Employee routes:
+
+```text
+GET    /api/employees
+GET    /api/employees/:id
+POST   /api/employees
+PUT    /api/employees/:id
+DELETE /api/employees/:id
+```
+
+Analytics and utility routes:
+
+```text
+GET  /api/analytics
+GET  /api/filters
+POST /api/seed
+```
+
+Employee list query parameters:
+
+```text
+page
+limit
+search
+country
+job_title
+sort_by
+sort_order
+```
+
+Employee create/update payloads are validated with `zod` before database writes.
 
 ## Checks
 
@@ -97,6 +143,8 @@ npm run build
 npm audit
 ```
 
+At the time of writing, the test suite contains 23 passing tests covering backend handlers, seed behavior, frontend API client behavior, and analytics rendering.
+
 ## Docs
 
 - [Architecture](docs/ARCHITECTURE.md)
@@ -106,4 +154,17 @@ npm audit
 
 ## Deployment
 
-Set `DATABASE_URL` in your production environment variables. Do not commit real database URLs or service credentials.
+Recommended path: deploy the Node app as a web service on Render or Railway and keep PostgreSQL on Neon.
+
+Set `DATABASE_URL` in production environment variables. Do not commit real database URLs or service credentials.
+
+Current local command:
+
+```text
+Install command: npm install
+Build command: npm run build
+Local start command: npm run dev
+Environment: DATABASE_URL=<your Neon connection string>
+```
+
+For a production deployment, add a dedicated production start command that serves `dist/` statically and maps `/api/*` to the same backend handlers. The current `npm run dev` command is intended for local full-stack development.

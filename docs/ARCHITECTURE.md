@@ -7,7 +7,7 @@ Browser
   |
   | HTTP
   v
-Local full-stack dev server
+Local full-stack Node dev server
   |-- serves frontend/ through Vite middleware
   `-- maps /api/* requests to backend/api/*
           |
@@ -18,58 +18,99 @@ Local full-stack dev server
       Neon PostgreSQL
 ```
 
+The project is intentionally small but split by responsibility:
+
+- `frontend/` owns browser UI, route rendering, and API client calls.
+- `backend/` owns API behavior, validation, persistence, and analytics.
+- `scripts/` owns local full-stack development and seeding commands.
+- `docs/` owns product and engineering artifacts.
+
 ## Frontend
 
 Location: `frontend/`
 
-The frontend is a React + TypeScript + Vite application. It owns all browser UI, routing, styles, components, and browser-side API calls.
+The frontend is a React + TypeScript + Vite application using Tailwind CSS and React Router.
 
 Key folders:
 
 - `frontend/src/pages`: route-level screens
 - `frontend/src/components`: reusable UI components
-- `frontend/src/lib`: browser API client
+- `frontend/src/lib`: browser API client and route preload helpers
 - `frontend/src/__tests__`: frontend and API client tests
+
+### Frontend Performance
+
+Dashboard and Employees pages are route-level lazy chunks. Navigation links preload route chunks on hover/focus so the initial JavaScript payload is smaller while navigation still feels fast.
+
+The dashboard keeps existing analytics visible during refresh and only spins the refresh icon. This avoids layout flicker after the first load.
 
 ## Backend
 
 Location: `backend/`
 
-The backend owns database access, API behavior, and seed generation.
+The backend uses Node.js API handlers. The local development server maps `/api/*` paths to these handlers and also supports REST-style employee route params.
 
 Key folders:
 
 - `backend/api`: API route handlers
-- `backend/db`: Neon/Postgres connection and schema setup
+- `backend/db`: Neon/PostgreSQL connection and schema setup
 - `backend/seed`: generated employee seed data
-
-There is no root `api/` folder. API logic lives only in `backend/api/`.
-
-## Local Development
-
-Location: `scripts/dev-server.mjs`
-
-The local dev server starts Vite in middleware mode for `frontend/` and exposes backend handlers under `/api/*`.
-
-This gives one local URL:
-
-```text
-http://localhost:5173
-```
 
 ## Database
 
 Database: Neon PostgreSQL
 
-The app uses the `pg` package with `DATABASE_URL` from `.env.local`.
+The app uses the `pg` package with `DATABASE_URL` from `.env.local` or the production environment.
 
-The database client creates the `employees` table and indexes if they do not exist:
+The `employees` table captures identity, organization context, and compensation:
+
+```text
+id
+employee_code
+full_name
+email
+job_title
+country
+salary
+department
+employment_type
+currency
+hire_date
+created_at
+updated_at
+```
+
+Schema creation is idempotent. Existing databases are upgraded with `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` and safe backfills for employee code, email, hire date, and updated timestamp.
+
+Indexes:
 
 - `employees.country`
 - `employees.job_title`
 - `employees.country, employees.job_title`
 - `employees.salary`
 - `employees.full_name`
+- `employees.employee_code`
+- `employees.email`
+
+The combined country/job-title index supports the main salary-insight filter path.
+
+## Validation
+
+Employee create/update payloads are validated with `zod` before SQL runs.
+
+Validation covers:
+
+- required employee code
+- required full name
+- valid email
+- required job title
+- required country
+- positive integer salary
+- allowed employment type
+- currency text
+- `YYYY-MM-DD` hire date
+
+Unique employee code and email conflicts return a `409` response.
 
 ## API Routes
 
@@ -83,6 +124,18 @@ Implemented in `backend/api/`:
 - `GET /api/analytics`
 - `GET /api/filters`
 - `POST /api/seed`
+
+The employee list endpoint supports:
+
+- `page`
+- `limit`
+- `search`
+- `country`
+- `job_title`
+- `sort_by`
+- `sort_order`
+
+Analytics are computed in SQL rather than in frontend memory.
 
 ## Seeding
 
@@ -98,10 +151,24 @@ npm run seed:append -- 1000
 `npm run seed` resets the table and inserts generated employees.
 `npm run seed:append` adds generated employees without deleting existing rows.
 
-## Performance
+The seed script:
 
-- Server-side pagination for employee table
-- Database-level filtering, sorting, and aggregation
-- Parameterized SQL queries
-- Batch inserts for seed data
-- Indexes for common filters and sorting, including the combined country/job-title filter used by salary analytics
+- uses first and last name source files
+- generates employee codes and emails
+- generates hire dates
+- inserts in batches of 500 rows
+- uses append-safe employee code sequencing
+
+## Testing And Quality
+
+The project uses Vitest, React Testing Library, ESLint, and TypeScript build checks.
+
+Current core checks:
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+The test suite covers API client behavior, employee API validation and REST routes, analytics, filters, seeding behavior, and frontend analytics rendering.
