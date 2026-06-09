@@ -67,6 +67,7 @@ The database client creates the `employees` table and indexes if they do not exi
 
 - `employees.country`
 - `employees.job_title`
+- `employees.country, employees.job_title`
 - `employees.salary`
 - `employees.full_name`
 
@@ -102,4 +103,4 @@ npm run seed:append -- 1000
 - Database-level filtering, sorting, and aggregation
 - Parameterized SQL queries
 - Batch inserts for seed data
-- Indexes for common filters and sorting
+- Indexes for common filters and sorting, including the combined country/job-title filter used by salary analytics

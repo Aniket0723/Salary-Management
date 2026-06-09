@@ -81,6 +81,7 @@ export async function ensureDatabase() {
       `);
       await query('CREATE INDEX IF NOT EXISTS employees_country_idx ON employees (country)');
       await query('CREATE INDEX IF NOT EXISTS employees_job_title_idx ON employees (job_title)');
+      await query('CREATE INDEX IF NOT EXISTS employees_country_job_title_idx ON employees (country, job_title)');
       await query('CREATE INDEX IF NOT EXISTS employees_salary_idx ON employees (salary DESC)');
       await query('CREATE INDEX IF NOT EXISTS employees_full_name_idx ON employees (full_name)');
       await query('CREATE UNIQUE INDEX IF NOT EXISTS employees_employee_code_idx ON employees (employee_code)');
