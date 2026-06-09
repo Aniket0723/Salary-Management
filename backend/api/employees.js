@@ -1,4 +1,5 @@
 import { ensureDatabase, query } from '../db/client.js';
+import { z } from 'zod';
 
 const SORT_COLUMNS = new Set([
   'id',
@@ -17,9 +18,40 @@ const SORT_COLUMNS = new Set([
 ]);
 
 const EMPLOYEE_FIELDS = 'id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date, created_at, updated_at';
+const requiredText = z.string().trim().min(1);
+const optionalText = z.preprocess(
+  value => value === '' ? null : value,
+  z.string().trim().min(1).nullable().optional(),
+);
+const hireDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'hire_date must use YYYY-MM-DD format');
+const employeePayloadSchema = z.object({
+  employee_code: requiredText.max(32),
+  full_name: requiredText.max(120),
+  email: z.string().trim().email().max(160),
+  job_title: requiredText.max(120),
+  country: requiredText.max(80),
+  salary: z.coerce.number().int().positive(),
+  department: optionalText,
+  employment_type: z.enum(['Full-time', 'Contract', 'Part-time']).default('Full-time'),
+  currency: requiredText.max(8).default('USD'),
+  hire_date: hireDate,
+});
+const employeeUpdateSchema = employeePayloadSchema.partial().extend({
+  id: z.coerce.number().int().positive(),
+}).refine(
+  data => Object.keys(data).some(key => key !== 'id' && data[key] !== undefined),
+  'No fields to update',
+);
 
 function jsonError(res, status, message) {
   return res.status(status).json({ error: message });
+}
+
+function formatValidationError(result) {
+  return result.error.issues.map(issue => {
+    const field = issue.path.join('.') || 'employee';
+    return `${field}: ${issue.message}`;
+  }).join('; ');
 }
 
 function buildWhere({ search = '', country = '', job_title = '' }) {
@@ -96,10 +128,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { employee_code, full_name, email, job_title, country, salary, department, employment_type, currency = 'USD', hire_date } = req.body;
-      if (!employee_code || !full_name || !email || !job_title || !country || salary == null || !hire_date) {
-        return jsonError(res, 400, 'Missing required fields: employee_code, full_name, email, job_title, country, salary, hire_date');
-      }
+      const parsed = employeePayloadSchema.safeParse(req.body);
+      if (!parsed.success) return jsonError(res, 400, formatValidationError(parsed));
+
+      const { employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date } = parsed.data;
 
       const result = await query(
         `
@@ -113,9 +145,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date } = req.body;
-      if (!id) return jsonError(res, 400, 'Missing id');
+      const parsed = employeeUpdateSchema.safeParse(req.body);
+      if (!parsed.success) return jsonError(res, 400, formatValidationError(parsed));
 
+      const { id, employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date } = parsed.data;
       const fields = { employee_code, full_name, email, job_title, country, salary, department, employment_type, currency, hire_date };
       const assignments = [];
       const values = [];
@@ -126,9 +159,6 @@ export default async function handler(req, res) {
           assignments.push(`${key} = $${values.length}`);
         }
       }
-
-      if (!assignments.length) return jsonError(res, 400, 'No fields to update');
-
       values.push(Number(id));
       const result = await query(
         `
@@ -155,6 +185,10 @@ export default async function handler(req, res) {
 
     return jsonError(res, 405, 'Method not allowed');
   } catch (err) {
+    if (err.code === '23505') {
+      return jsonError(res, 409, 'Employee code or email already exists');
+    }
+
     console.error('Employees API error:', err);
     return res.status(500).json({ error: err.message });
   }

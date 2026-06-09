@@ -82,7 +82,31 @@ describe('employees API handler', () => {
 
     expect(query).not.toHaveBeenCalled();
     expect(res.statusCode).toBe(400);
-    expect(res.body.error).toContain('Missing required fields');
+    expect(res.body.error).toContain('employee_code');
+  });
+
+  it('rejects invalid create payloads before SQL runs', async () => {
+    const req = createReq({
+      method: 'POST',
+      body: {
+        employee_code: 'ACME-00001',
+        full_name: 'Jane Doe',
+        email: 'not-an-email',
+        job_title: 'Software Engineer',
+        country: 'India',
+        salary: 0,
+        hire_date: '15-01-2024',
+      },
+    });
+    const res = createRes();
+
+    await handler(req, res);
+
+    expect(query).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toContain('email');
+    expect(res.body.error).toContain('salary');
+    expect(res.body.error).toContain('hire_date');
   });
 
   it('creates an employee with parameterized SQL', async () => {
