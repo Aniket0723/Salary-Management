@@ -7,8 +7,10 @@ Browser
   |
   | HTTP
   v
-Local full-stack Node dev server
-  |-- serves frontend/ through Vite middleware
+Node web server
+  |-- local dev: serves frontend/ through Vite middleware
+  |-- production: serves dist/ static assets
+  |-- exposes /health for deployment checks
   `-- maps /api/* requests to backend/api/*
           |
           v
@@ -22,7 +24,7 @@ The project is intentionally small but split by responsibility:
 
 - `frontend/` owns browser UI, route rendering, and API client calls.
 - `backend/` owns API behavior, validation, persistence, and analytics.
-- `scripts/` owns local full-stack development and seeding commands.
+- `scripts/` owns local full-stack development, production serving, shared API routing helpers, and seeding commands.
 - `docs/` owns product and engineering artifacts.
 
 ## Frontend
@@ -49,6 +51,8 @@ The dashboard keeps existing analytics visible during refresh and only spins the
 Location: `backend/`
 
 The backend uses Node.js API handlers. The local development server maps `/api/*` paths to these handlers and also supports REST-style employee route params.
+
+The production server uses the same API routing helper, serves the Vite build from `dist/`, and falls back to `index.html` for client-side routes.
 
 Key folders:
 

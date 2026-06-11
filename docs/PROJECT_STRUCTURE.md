@@ -14,7 +14,6 @@
 |   |   `-- main.tsx         React entry point
 |   |-- index.html           Vite HTML entry
 |   |-- vite.config.ts       Frontend build config
-|   |-- vitest.config.ts     Frontend test config
 |   `-- tsconfig.app.json    Frontend TypeScript config
 |-- backend/
 |   |-- api/                 API route implementations and validation
@@ -23,9 +22,13 @@
 |-- scripts/
 |   |-- dev-server.mjs       Local full-stack dev server
 |   |-- env.mjs              Local env loader
+|   |-- http-utils.mjs       Shared API request helpers
+|   |-- start-server.mjs     Production server for dist/ and /api/*
 |   `-- seed.mjs             Seed CLI
 |-- docs/                    Documentation
 |-- .env.example             Environment variable template
+|-- render.yaml              Render Blueprint deployment config
+|-- vitest.config.ts         Test config
 |-- package.json             Root scripts and dependencies
 |-- package-lock.json        Locked dependency versions
 |-- tsconfig.json            TypeScript project references
@@ -39,6 +42,8 @@
 All API behavior lives in `backend/api/`.
 
 There is intentionally no root `api/` folder. The local full-stack server in `scripts/dev-server.mjs` maps browser requests from `/api/*` to the matching `backend/api/*` handler. It also maps REST-style employee URLs such as `/api/employees/123` to the employees handler with route params.
+
+The production server in `scripts/start-server.mjs` serves the built `dist/` frontend, exposes `/health` for deployment checks, and maps `/api/*` to the same backend handlers.
 
 This keeps the boundary clean:
 

@@ -45,18 +45,19 @@ Testing and quality:
 |   |-- src/             # Frontend source code
 |   |-- index.html       # Frontend HTML entry
 |   |-- vite.config.ts   # Frontend build config
-|   |-- vitest.config.ts # Frontend test config
 |   `-- tsconfig.app.json
 |-- backend/             # Backend source code
 |   |-- api/             # API route implementations
 |   |-- db/              # Neon/Postgres connection and schema setup
 |   `-- seed/            # Employee seed data generator
-|-- scripts/             # Local full-stack dev and seed CLI scripts
+|-- scripts/             # Local dev, production server, and seed CLI scripts
 |-- docs/                # Project docs and architecture notes
+|-- render.yaml          # Render Blueprint deployment config
+|-- vitest.config.ts     # Test config
 `-- package.json         # Root workspace scripts and dependencies
 ```
 
-There is no root `api/` folder anymore. All API logic lives in `backend/api/`. During local development, `scripts/dev-server.mjs` exposes those handlers at `/api/*` while serving the frontend.
+There is no root `api/` folder anymore. All API logic lives in `backend/api/`. During local development, `scripts/dev-server.mjs` exposes those handlers at `/api/*` while serving the frontend. In production, `scripts/start-server.mjs` serves the built `dist/` app and the same API handlers.
 
 ## Local Setup
 
@@ -140,6 +141,7 @@ Employee create/update payloads are validated with `zod` before database writes.
 npm run lint
 npm run test
 npm run build
+npm start
 npm audit
 ```
 
@@ -154,17 +156,22 @@ At the time of writing, the test suite contains 23 passing tests covering backen
 
 ## Deployment
 
-Recommended path: deploy the Node app as a web service on Render or Railway and keep PostgreSQL on Neon.
+Recommended path: deploy the Node app as a Render web service and keep PostgreSQL on Neon.
 
 Set `DATABASE_URL` in production environment variables. Do not commit real database URLs or service credentials.
 
-Current local command:
+This repo includes `render.yaml`, so Render can create the web service from the repository root.
 
 ```text
-Install command: npm install
-Build command: npm run build
-Local start command: npm run dev
-Environment: DATABASE_URL=<your Neon connection string>
+Runtime: Node
+Build command: npm ci && npm run build
+Start command: npm start
+Health check: /health
+Environment: DATABASE_URL=<your Neon or Postgres connection string>
 ```
 
-For a production deployment, add a dedicated production start command that serves `dist/` statically and maps `/api/*` to the same backend handlers. The current `npm run dev` command is intended for local full-stack development.
+After the service is live, run the seed command locally or from a Render shell/job with the production `DATABASE_URL` to create the initial 10,000 employee records:
+
+```bash
+npm run seed
+```
