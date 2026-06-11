@@ -164,7 +164,7 @@ This repo includes `render.yaml`, so Render can create the web service from the 
 
 ```text
 Runtime: Node
-Build command: npm ci && npm run build
+Build command: npm ci --include=dev && npm run build
 Start command: npm start
 Health check: /health
 Environment: DATABASE_URL=<your Neon or Postgres connection string>
