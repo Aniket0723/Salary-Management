@@ -1,6 +1,6 @@
-import { Award, Banknote, BriefcaseBusiness, DollarSign, Globe2, TrendingDown, TrendingUp, Users } from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
-import type { AnalyticsData } from '../types';
+import { Award, Banknote, BriefcaseBusiness, Globe2 } from "lucide-react";
+import type { ComponentType, ReactNode } from "react";
+import type { AnalyticsData } from "../types";
 
 interface Props {
   data: AnalyticsData | null;
@@ -8,10 +8,18 @@ interface Props {
 }
 
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
-function TablePanel({ title, icon: Icon, children }: {
+function TablePanel({
+  title,
+  icon: Icon,
+  children,
+}: {
   title: string;
   icon: ComponentType<{ className?: string }>;
   children: ReactNode;
@@ -30,71 +38,55 @@ function TablePanel({ title, icon: Icon, children }: {
 }
 
 export default function AnalyticsCards({ data, loading }: Props) {
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-5 flex items-center justify-between">
-              <div className="h-4 w-28 rounded bg-slate-200"></div>
-              <div className="h-10 w-10 rounded-lg bg-slate-200"></div>
-            </div>
-            <div className="h-8 w-40 rounded bg-slate-200"></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (!data) return null;
-
-  const cards = [
-    { label: 'Total Employees', value: data.overall.total_employees.toLocaleString(), icon: Users, accent: 'text-sky-700', bg: 'bg-sky-50' },
-    { label: 'Total Payroll', value: formatCurrency(data.overall.total_payroll), icon: DollarSign, accent: 'text-emerald-700', bg: 'bg-emerald-50' },
-    { label: 'Average Salary', value: formatCurrency(data.overall.avg_salary), icon: TrendingUp, accent: 'text-indigo-700', bg: 'bg-indigo-50' },
-    { label: 'Salary Range', value: `${formatCurrency(data.overall.min_salary)} - ${formatCurrency(data.overall.max_salary)}`, icon: TrendingDown, accent: 'text-amber-700', bg: 'bg-amber-50' },
-  ];
+  if (loading || !data) return null;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <article key={card.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <span className="text-xs font-bold uppercase tracking-wide text-slate-500">{card.label}</span>
-                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${card.bg} ${card.accent}`}>
-                  <Icon className="h-5 w-5" />
-                </span>
-              </div>
-              <div className="break-words text-xl font-bold leading-tight text-slate-950">{card.value}</div>
-            </article>
-          );
-        })}
-      </div>
-
       <TablePanel title="Salary by Country" icon={Globe2}>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Country</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Headcount</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Min Salary</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Max Salary</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Avg Salary</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Total Payroll</th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Country
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Headcount
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Min Salary
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Max Salary
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Avg Salary
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Total Payroll
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.country_analytics.map((c) => (
               <tr key={c.country} className="transition hover:bg-emerald-50/35">
-                <td className="px-5 py-4 font-semibold text-slate-950">{c.country}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{c.count.toLocaleString()}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{formatCurrency(c.min_salary)}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{formatCurrency(c.max_salary)}</td>
-                <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(c.avg_salary)}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{formatCurrency(c.total_payroll)}</td>
+                <td className="px-5 py-4 font-semibold text-slate-950">
+                  {c.country}
+                </td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {c.count.toLocaleString()}
+                </td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {formatCurrency(c.min_salary)}
+                </td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {formatCurrency(c.max_salary)}
+                </td>
+                <td className="px-5 py-4 text-right font-semibold text-emerald-700">
+                  {formatCurrency(c.avg_salary)}
+                </td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {formatCurrency(c.total_payroll)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -105,19 +97,33 @@ export default function AnalyticsCards({ data, loading }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Job Title</th>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Country</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Count</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Avg Salary</th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Job Title
+              </th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Country
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Count
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Avg Salary
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.job_analytics.slice(0, 20).map((j) => (
               <tr key={j.key} className="transition hover:bg-emerald-50/35">
-                <td className="px-5 py-4 font-semibold text-slate-950">{j.job_title}</td>
+                <td className="px-5 py-4 font-semibold text-slate-950">
+                  {j.job_title}
+                </td>
                 <td className="px-5 py-4 text-slate-600">{j.country}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{j.count}</td>
-                <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(j.avg_salary)}</td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {j.count}
+                </td>
+                <td className="px-5 py-4 text-right font-semibold text-emerald-700">
+                  {formatCurrency(j.avg_salary)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -128,19 +134,38 @@ export default function AnalyticsCards({ data, loading }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Department</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Headcount</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Avg Salary</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Total Payroll</th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Department
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Headcount
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Avg Salary
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Total Payroll
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.department_analytics.map((d) => (
-              <tr key={d.department} className="transition hover:bg-emerald-50/35">
-                <td className="px-5 py-4 font-semibold text-slate-950">{d.department}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{d.count.toLocaleString()}</td>
-                <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(d.avg_salary)}</td>
-                <td className="px-5 py-4 text-right text-slate-600">{formatCurrency(d.total_payroll)}</td>
+              <tr
+                key={d.department}
+                className="transition hover:bg-emerald-50/35"
+              >
+                <td className="px-5 py-4 font-semibold text-slate-950">
+                  {d.department}
+                </td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {d.count.toLocaleString()}
+                </td>
+                <td className="px-5 py-4 text-right font-semibold text-emerald-700">
+                  {formatCurrency(d.avg_salary)}
+                </td>
+                <td className="px-5 py-4 text-right text-slate-600">
+                  {formatCurrency(d.total_payroll)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -151,21 +176,35 @@ export default function AnalyticsCards({ data, loading }: Props) {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Rank</th>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Name</th>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Job Title</th>
-              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">Country</th>
-              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">Salary</th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Rank
+              </th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Name
+              </th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Job Title
+              </th>
+              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wide">
+                Country
+              </th>
+              <th className="px-5 py-3.5 text-right text-xs font-bold uppercase tracking-wide">
+                Salary
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data.top_earners.map((e, i) => (
               <tr key={e.id} className="transition hover:bg-emerald-50/35">
                 <td className="px-5 py-4 font-bold text-slate-400">#{i + 1}</td>
-                <td className="px-5 py-4 font-semibold text-slate-950">{e.full_name}</td>
+                <td className="px-5 py-4 font-semibold text-slate-950">
+                  {e.full_name}
+                </td>
                 <td className="px-5 py-4 text-slate-600">{e.job_title}</td>
                 <td className="px-5 py-4 text-slate-600">{e.country}</td>
-                <td className="px-5 py-4 text-right font-semibold text-emerald-700">{formatCurrency(e.salary)}</td>
+                <td className="px-5 py-4 text-right font-semibold text-emerald-700">
+                  {formatCurrency(e.salary)}
+                </td>
               </tr>
             ))}
           </tbody>
