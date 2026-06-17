@@ -84,14 +84,27 @@ export default function Dashboard() {
               </span>
               Filters
             </div>
-            {(selectedCountry || selectedJob) && (
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                Filtered view
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setSelectedCountry("");
+                  setSelectedJob("");
+                }}
+                disabled={!selectedCountry && !selectedJob}
+                className="inline-flex h-9 w-fit items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-[11px] font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+                Clear
+              </button>
+              {(selectedCountry || selectedJob) && (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+                  Filtered view
+                </span>
+              )}
+            </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[minmax(150px,190px)_minmax(180px,250px)_1fr] lg:items-end">
+          <div className="grid gap-4 lg:grid-cols-[minmax(150px,190px)_minmax(180px,250px)] lg:items-end">
             <label className="space-y-1.5">
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
                 Country
@@ -126,17 +139,6 @@ export default function Dashboard() {
                 ]}
               />
             </label>
-            <button
-              onClick={() => {
-                setSelectedCountry("");
-                setSelectedJob("");
-              }}
-              disabled={!selectedCountry && !selectedJob}
-              className="inline-flex h-9 w-fit items-center justify-center justify-self-start gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-[11px] font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-40 lg:justify-self-end"
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </button>
           </div>
 
           <div className="mt-6 border-t border-slate-200 pt-6">
